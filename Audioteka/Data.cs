@@ -70,6 +70,11 @@ namespace Audioteka
         public int Duration { get; set; }
 
         public TimeSpan Time { get; set; }
+
+        public override string ToString()
+        {
+            return Title;
+        }
     }
 
     public class Album
@@ -80,5 +85,10 @@ namespace Audioteka
         public string Title { get; set; }
 
         public List<Audio> Songs { get; set; } = new List<Audio>();
+
+        public override string ToString()
+        {
+            return Title;
+        }
     }
 }

@@ -41,30 +41,39 @@ namespace Audioteka
         
         async void OAuthVk()
         {
-            const string vkUri = "https://oauth.vk.com/authorize?client_id=4919033&scope=9999999&" +
-                                    "redirect_uri=http://oauth.vk.com/blank.html&display=touch&response_type=token";
-            Uri requestUri = new Uri(vkUri);
-            Uri callbackUri = new Uri("http://oauth.vk.com/blank.html");
-
-            WebAuthenticationResult result = await WebAuthenticationBroker.AuthenticateAsync(
-                WebAuthenticationOptions.None, requestUri, callbackUri);
-
-            switch (result.ResponseStatus)
+            try
             {
-                case WebAuthenticationStatus.UserCancel:
-                    break;
-                case WebAuthenticationStatus.ErrorHttp:
-                    MessageDialog dialogError = new MessageDialog("Не удалось открыть страницу сервиса\n" +
-                "Попробуйте войти в приложение позже!", "Ошибка");
-                    await dialogError.ShowAsync();
-                    break;
-                case WebAuthenticationStatus.Success:
-                    string responseString = result.ResponseData;
-                    char[] separators = { '=', '&' };
-                    string[] responseContent = responseString.Split(separators);
-                    accessToken = responseContent[1];
-                    getGroupList();
-                    break;
+                const string vkUri = "https://oauth.vk.com/authorize?client_id=4919033&scope=9999999&" +
+                                        "redirect_uri=http://oauth.vk.com/blank.html&display=touch&response_type=token";
+                Uri requestUri = new Uri(vkUri);
+                Uri callbackUri = new Uri("http://oauth.vk.com/blank.html");
+
+                WebAuthenticationResult result = await WebAuthenticationBroker.AuthenticateAsync(
+                    WebAuthenticationOptions.None, requestUri, callbackUri);
+
+                switch (result.ResponseStatus)
+                {
+                    case WebAuthenticationStatus.UserCancel:
+                        break;
+                    case WebAuthenticationStatus.ErrorHttp:
+                        MessageDialog dialogError = new MessageDialog("Не удалось открыть страницу сервиса\n" +
+                    "Попробуйте войти в приложение позже!", "Ошибка");
+                        await dialogError.ShowAsync();
+                        break;
+                    case WebAuthenticationStatus.Success:
+                        string responseString = result.ResponseData;
+                        char[] separators = { '=', '&' };
+                        string[] responseContent = responseString.Split(separators);
+                        accessToken = responseContent[1];
+                        getGroupList();
+                        break;
+                }
+            }
+            catch (Exception)
+            {
+                MessageDialog dialogError = new MessageDialog("Ошибка входа");
+                await dialogError.ShowAsync();
+                throw;
             }
         }
 
@@ -77,9 +86,9 @@ namespace Audioteka
 
         private void groupsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ListView list = (ListView)sender;
-            if ((Group)list.SelectedItem != null)
-                currGroup = (Group)list.SelectedItem;  // сохраняем объект выбранной группы
+            var list = sender as ListView;
+            if (list.SelectedItem is Group)
+                currGroup = list.SelectedItem as Group;  // сохраняем объект выбранной группы
             else
                 return;
 
@@ -94,25 +103,9 @@ namespace Audioteka
             groupsSplitView.IsPaneOpen = true; // открываем панель справа
         }
 
-        private void TextBlock_SelectionChanged(object sender, RoutedEventArgs e)
+        private void postsListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            // отображаем при нажатии весь текст поста
-            ListViewItem childs = (ListViewItem)postsListView.ItemsPanelRoot.Children[postsListView.SelectedIndex];
-            Grid ch = (Grid)childs.ContentTemplateRoot;
-            TextBlock bl = (TextBlock)ch.Children[2];
-            bl.MaxLines = 0;
-        }
-
-        private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
-        { 
-            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
-        }
-
-        private void Attach_Audio_Button_Click(object sender, RoutedEventArgs e)
-        {
-            Button but = (Button)sender;
-            currPost = (Post)but.DataContext; // сохраняем объект выбранного поста
-
+            currPost = e.ClickedItem as Post; // сохраняем объект выбранного поста
             Frame.Navigate(typeof(AttachAudioPage), accessToken); // вызываем окно выбора аудиозаписей
         }
     }

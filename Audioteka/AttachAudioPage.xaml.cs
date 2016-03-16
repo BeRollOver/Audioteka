@@ -25,6 +25,7 @@ namespace Audioteka
         string accessToken;
         List<Album> albumsList;
         Album currAlbum;
+        int count = 10;
 
         public AttachAudioPage()
         {
@@ -34,7 +35,11 @@ namespace Audioteka
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter != null)
+            {
                 accessToken = e.Parameter.ToString();
+            }
+
+            count = 10 - MainPage.currPost.Attachments.Count; // количество аудиозаписей, которых можно приложить к посту
             
             // получение списка альбомов целиком
             int offset = 0;
@@ -80,34 +85,29 @@ namespace Audioteka
             albumsSlitView.IsPaneOpen = true; // открываем панель справа
         }
 
-        private void songsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-
-        }
-
         private void albumsSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             // оставляем в списке альбомов только те, которые соответствуют результатам поиска
             var term = albumsSuggestBox.Text.ToLower();
             var results = albumsList.Select(x => x.Title).Where(i => i.ToLower().Contains(term)).ToList();
-            
-            try
+            albumsListView.ItemsSource = albumsList.Where(x => results.Contains(x.Title));
+        }
+
+        private void songsListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (attachedSongsPanel.Children.Count != count)
             {
-                albumsListView.ItemsSource = albumsList.Where(x => results.Contains(x.Title));
-            }
-            catch (Exception)
-            {
-                throw;
+                var list = sender as ListView;
+                var audio = e.ClickedItem as Audio;
+                Button button = new Button();
+                button.Content = audio;
+                button.Click += Button_Click;
+                var butList = attachedSongsPanel.Children.ToList().Select(x => x as Button);
+                var songsList = butList.Select(x => x.Content as Audio);
+                if (!songsList.Select(x => x.Id).Contains(audio.Id))
+                {
+                    attachedSongsPanel.Children.Add(button);
+                }
             }
         }
 
@@ -117,6 +117,17 @@ namespace Audioteka
             var term = songsSuggestBox.Text.ToLower();
             var results = currAlbum.Songs.Select(x => x.Title).Where(i => i.ToLower().Contains(term)).ToList();
             songsListView.ItemsSource = currAlbum.Songs.Where(x => results.Contains(x.Title));
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            attachedSongsPanel.Children.Remove((Button)sender);
+        }
+
+        private void attchButton_Click(object sender, RoutedEventArgs e)
+        {
+            var butList = attachedSongsPanel.Children.ToList().Select(x => x as Button);
+            var songsList = butList.Select(x => x.Content as Audio);
         }
     }
 }

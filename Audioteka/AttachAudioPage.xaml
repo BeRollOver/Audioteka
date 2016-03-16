@@ -7,6 +7,24 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+
+
+    <Page.BottomAppBar>
+        <AppBar x:Name="commandBar" ClosedDisplayMode="Compact">
+            <AppBar.Content>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel x:Name="attachedSongsPanel" Orientation="Horizontal" Grid.Column="1"/>
+                    <AppBarButton Click="attchButton_Click" Name="attchButton" Icon="Accept" Grid.Column="0"/>
+                    </Grid>
+            </AppBar.Content>
+        </AppBar>
+    </Page.BottomAppBar>
+
     <SplitView Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="albumsSlitView" DisplayMode="Inline">
         <SplitView.Content>
             <Grid>
@@ -36,29 +54,29 @@
                     <RowDefinition />
                 </Grid.RowDefinitions>
                 <AutoSuggestBox x:Name="songsSuggestBox" PlaceholderText="Tape song title" QueryIcon="Find" TextChanged="songsSuggestBox_TextChanged" Grid.Row="0"/>
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" Grid.Row="1">
-                <ListView x:Name="songsListView" IsItemClickEnabled="True" SelectionMode="Multiple" SelectionChanged="songsListView_SelectionChanged" >
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid PointerPressed="Grid_PointerPressed" Margin="0 0 0 10" Width="Auto">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding Artist}" FontWeight="Bold" Grid.Column="0"/>
-                                <TextBlock Text=" – " Grid.Column="1"/>
-                                <TextBlock Text="{Binding Title}" Grid.Column="2"/>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" Grid.Row="1">
+                    <ListView x:Name="songsListView" IsItemClickEnabled="True" SelectionMode="Single" ItemClick="songsListView_ItemClick">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0 0 0 10" Width="Auto">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Artist}" FontWeight="Bold" Grid.Column="0"/>
+                                    <TextBlock Text=" – " Grid.Column="1"/>
+                                    <TextBlock Text="{Binding Title}" Grid.Column="2"/>
                                     <TextBlock Text="{Binding Time}"  Grid.Column="3" HorizontalAlignment="Right"/>
                                 </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </ScrollViewer>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </ScrollViewer>
             </Grid>
         </SplitView.Pane>
     </SplitView>

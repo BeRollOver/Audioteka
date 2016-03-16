@@ -28,10 +28,10 @@
         </SplitView.Content>
         <SplitView.Pane>
             <ScrollViewer HorizontalScrollBarVisibility="Auto">
-                <ListView x:Name="postsListView" IsItemClickEnabled="True" SelectionMode="Single"  SelectionChanged="TextBlock_SelectionChanged" >
+                <ListView x:Name="postsListView" IsItemClickEnabled="True" SelectionMode="Single"  ItemClick="postsListView_ItemClick">
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Grid PointerPressed="Grid_PointerPressed">
+                            <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
                                     <RowDefinition />
@@ -42,14 +42,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding Id}" FontWeight="Bold" Grid.Row="0"/>
                                 <TextBlock Text="{Binding Time}" FontWeight="Bold" Grid.Row="1"/>
-                                <TextBlock MaxLines="4" Text="{Binding Text}"  Grid.Row="2" TextTrimming="WordEllipsis" Margin="0 0 0 10">
-
-                                </TextBlock>
-                                <FlyoutBase.AttachedFlyout>
-                                    <Flyout x:Name="dialogBox" Placement="Bottom">
-                                        <Button Content="Attach audio" Click="Attach_Audio_Button_Click" />
-                                    </Flyout>
-                                </FlyoutBase.AttachedFlyout>
+                                <TextBlock MaxLines="4" Text="{Binding Text}"  Grid.Row="2" TextTrimming="WordEllipsis" Margin="0 0 0 10" />
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
