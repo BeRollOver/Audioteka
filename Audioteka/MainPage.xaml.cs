@@ -43,7 +43,7 @@ namespace Audioteka
         {
             try
             {
-                const string vkUri = "https://oauth.vk.com/authorize?client_id=4919033&scope=9999999&" +
+                const string vkUri = "https://oauth.vk.com/authorize?client_id=4919033&scope=audio,wall,groups&" +
                                         "redirect_uri=http://oauth.vk.com/blank.html&display=touch&response_type=token";
                 Uri requestUri = new Uri(vkUri);
                 Uri callbackUri = new Uri("http://oauth.vk.com/blank.html");
@@ -69,7 +69,7 @@ namespace Audioteka
                         break;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 MessageDialog dialogError = new MessageDialog("Ошибка входа");
                 await dialogError.ShowAsync();

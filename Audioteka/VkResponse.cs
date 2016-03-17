@@ -15,16 +15,70 @@ namespace Audioteka
         public static T getResp<T>(string request)
         {
             string data;
-            var webrequest = WebRequest.Create(request);
-            var response = webrequest.GetResponseAsync();
-            using (Stream stream = response.Result.GetResponseStream())
+            try
             {
-                using (StreamReader reader = new StreamReader(stream))
+                var webrequest = WebRequest.Create(request);
+                var response = webrequest.GetResponseAsync();
+                using (Stream stream = response.Result.GetResponseStream())
                 {
-                    data = reader.ReadToEnd();
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        data = reader.ReadToEnd();
+                    }
+                }
+                return JsonConvert.DeserializeObject<T>(data);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public static string getAttachString(List<Attachment> attch)
+        {
+            string attachments = "";
+            foreach (var item in attch)
+            {
+                switch (item.Type)
+                {
+                    case "photo":
+                        attachments += item.Type + item.Photo.OwnerId + "_" + item.Photo.Id + ",";
+                        continue;
+                    case "video":
+                        attachments += item.Type + item.Video.OwnerId + "_" + item.Video.Id + ",";
+                        continue;
+                    case "audio":
+                        attachments += item.Type + item.Audio.OwnerId + "_" + item.Audio.Id + ",";
+                        continue;
+                    case "doc":
+                        attachments += item.Type + item.Doc.OwnerId + "_" + item.Doc.Id + ",";
+                        continue;
+                    case "graffiti":
+                        attachments += item.Type + item.Graffiti.OwnerId + "_" + item.Graffiti.Id + ",";
+                        continue;
+                    case "page":
+                        attachments += item.Type + item.Page.OwnerId + "_" + item.Page.Id + ",";
+                        continue;
+                    case "note":
+                        attachments += item.Type + item.Note.OwnerId + "_" + item.Note.Id + ",";
+                        continue;
+                    case "poll":
+                        attachments += item.Type + item.Poll.OwnerId + "_" + item.Poll.Id + ",";
+                        continue;
+                    case "album":
+                        attachments += item.Type + item.AlbumPhoto.OwnerId + "_" + item.AlbumPhoto.Id + ",";
+                        continue;
+                    case "link":
+                        attachments += item.Link.Url + ",";
+                        continue;
+                    default:
+                        continue;
                 }
             }
-            return JsonConvert.DeserializeObject<T>(data);
+            var i = attachments.Length - 1;
+            attachments = attachments.Remove(i);
+            return attachments;
         }
     }
 }

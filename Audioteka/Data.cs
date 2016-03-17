@@ -43,7 +43,7 @@ namespace Audioteka
         [JsonProperty("text")]
         public string Text { get; set; }
         [JsonProperty("attachments")]
-        public List<Attachment> Attachments { get; set; }
+        public List<Attachment> Attachments { get; set; } = new List<Attachment>();
         
         public DateTime Time { get; set; }
     }
@@ -52,14 +52,37 @@ namespace Audioteka
     {
         [JsonProperty("type")]
         public string Type { get; set; }
+        [JsonProperty("photo")]
+        public Media Photo { get; set; }
+        [JsonProperty("video")]
+        public Media Video { get; set; }
         [JsonProperty("audio")]
         public Audio Audio { get; set; }
+        [JsonProperty("doc")]
+        public Media Doc { get; set; }
+        [JsonProperty("graffiti")]
+        public Media Graffiti { get; set; }
+        [JsonProperty("page")]
+        public Media Page { get; set; }
+        [JsonProperty("note")]
+        public Media Note { get; set; }
+        [JsonProperty("poll")]
+        public Media Poll { get; set; }
+        [JsonProperty("album")]
+        public Media AlbumPhoto { get; set; }
+        [JsonProperty("link")]
+        public Link Link { get; set; }
     }
 
-    public class Audio
+    public class Media
     {
         [JsonProperty("id")]
         public int Id { get; set; }
+        [JsonProperty("owner_id")]
+        public int OwnerId { get; set; }
+    }
+    public class Audio : Media
+    {
         [JsonProperty("artist")]
         public string Artist { get; set; }
         [JsonProperty("title")]
@@ -76,6 +99,44 @@ namespace Audioteka
             return Title;
         }
     }
+    public class Photo : Media
+    {
+
+    }
+    public class Video : Media
+    {
+
+    }
+    public class Doc : Media
+    {
+
+    }
+    public class Graffiti : Media
+    {
+
+    }
+    public class Note : Media
+    {
+
+    }
+    public class Poll : Media
+    {
+
+    }
+    public class PageWiki : Media
+    {
+
+    }
+    public class AlbumPhoto : Media
+    {
+
+    }
+
+    public class Link
+    {
+        [JsonProperty("url")]
+        public string Url { get; set; }
+    }
 
     public class Album
     {
@@ -90,5 +151,11 @@ namespace Audioteka
         {
             return Title;
         }
+    }
+
+    class Result
+    {
+        [JsonProperty("response")]
+        public int Response { get; set; }
     }
 }

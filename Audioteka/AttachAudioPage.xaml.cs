@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -40,7 +41,7 @@ namespace Audioteka
             }
 
             count = 10 - MainPage.currPost.Attachments.Count; // количество аудиозаписей, которых можно приложить к посту
-            
+
             // получение списка альбомов целиком
             int offset = 0;
             string request = "https://api.vk.com/method/audio.getAlbums?owner_id=-" +
@@ -63,6 +64,25 @@ namespace Audioteka
 
             // передаем список альбомов нужным контейнерам
             albumsListView.ItemsSource = albumsList;
+            
+            // список уже прикреплённых треков на панель
+            foreach (var item in MainPage.currPost.Attachments.Where(x => x.Type == "audio"))
+            {
+                addSongToPanel(item.Audio);
+            }
+        }
+
+        void addSongToPanel(Audio audio)
+        {
+            Button button = new Button();
+            button.Content = audio;
+            button.Click += Button_Click;
+            var butList = attachedSongsPanel.Children.ToList().Select(x => x as Button);
+            var songsList = butList.Select(x => x.Content as Audio);
+            if (!songsList.Select(x => x.Id).Contains(audio.Id))
+            {
+                attachedSongsPanel.Children.Add(button);
+            }
         }
 
         private void albumsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -99,15 +119,7 @@ namespace Audioteka
             {
                 var list = sender as ListView;
                 var audio = e.ClickedItem as Audio;
-                Button button = new Button();
-                button.Content = audio;
-                button.Click += Button_Click;
-                var butList = attachedSongsPanel.Children.ToList().Select(x => x as Button);
-                var songsList = butList.Select(x => x.Content as Audio);
-                if (!songsList.Select(x => x.Id).Contains(audio.Id))
-                {
-                    attachedSongsPanel.Children.Add(button);
-                }
+                addSongToPanel(audio);
             }
         }
 
@@ -124,10 +136,33 @@ namespace Audioteka
             attachedSongsPanel.Children.Remove((Button)sender);
         }
 
-        private void attchButton_Click(object sender, RoutedEventArgs e)
+        private async void attchButton_Click(object sender, RoutedEventArgs e)
         {
+            // получаем список аудиозаписей для прикрепления
             var butList = attachedSongsPanel.Children.ToList().Select(x => x as Button);
             var songsList = butList.Select(x => x.Content as Audio);
+
+            MainPage.currPost.Attachments.RemoveAll(x => x.Type == "audio"); // очищаем предыдущий список аудиозаписей поста
+            MainPage.currPost.Attachments.AddRange(songsList.Select(x => new Attachment { Type = "audio", Audio = x })); // добавляем свой список аудиозаписей
+            
+            string request = "https://api.vk.com/method/wall.edit?owner_id=-" + MainPage.currGroup.Id +
+                "&post_id=" + MainPage.currPost.Id +
+                "&message=" + MainPage.currPost.Text +
+                "&attachments=" + VkResponse.getAttachString(MainPage.currPost.Attachments) +
+                "&publish_date=" + MainPage.currPost.Date +
+                "&v=5.50&access_token=" + accessToken;
+            var result = VkResponse.getResp<Result>(request);
+
+            if (result.Response == 1)
+            {
+                MessageDialog dialog = new MessageDialog("Success attached");
+                await dialog.ShowAsync();
+            }
+            else
+            {
+                MessageDialog dialog = new MessageDialog("Fail attached");
+                await dialog.ShowAsync();
+            }
         }
     }
 }
