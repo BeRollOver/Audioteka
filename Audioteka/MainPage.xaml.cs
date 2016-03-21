@@ -39,7 +39,6 @@ namespace Audioteka
         {
             this.InitializeComponent();
             groupsSplitView.OpenPaneLength = Window.Current.Bounds.Width / 2;
-            if(accessToken==null) OAuthVk();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -58,7 +57,7 @@ namespace Audioteka
             }
         }
 
-            async void OAuthVk()
+        async void OAuthVk()
         {
             try
             {
