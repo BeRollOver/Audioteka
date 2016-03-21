@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Audioteka
             [JsonProperty("count")]
             public int Count { get; set; }
             [JsonProperty("items")]
-            public List<T> Items { get; set; }
+            public ObservableCollection<T> Items { get; set; } = new ObservableCollection<T>();
         }
 
         [JsonProperty("response")]
@@ -43,7 +44,7 @@ namespace Audioteka
         [JsonProperty("text")]
         public string Text { get; set; }
         [JsonProperty("attachments")]
-        public List<Attachment> Attachments { get; set; } = new List<Attachment>();
+        public ObservableCollection<Attachment> Attachments { get; set; } = new ObservableCollection<Attachment>();
         
         public DateTime Time { get; set; }
     }
@@ -145,7 +146,7 @@ namespace Audioteka
         [JsonProperty("title")]
         public string Title { get; set; }
 
-        public List<Audio> Songs { get; set; } = new List<Audio>();
+        public ObservableCollection<Audio> Songs { get; set; } = new ObservableCollection<Audio>();
 
         public override string ToString()
         {

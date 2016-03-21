@@ -34,11 +34,11 @@
                 </Grid.RowDefinitions>
                 <AutoSuggestBox x:Name="albumsSuggestBox" PlaceholderText="Tape album title" QueryIcon="Find" TextChanged="albumsSuggestBox_TextChanged" Grid.Row="0"/>
                 <ScrollViewer Grid.Row="1">
-                    <ListView x:Name="albumsListView" IsItemClickEnabled="True" SelectionMode="Single" SelectionChanged="albumsListView_SelectionChanged">
+                    <ListView x:Name="albumsListView" ItemsSource="{x:Bind Albums}" IsItemClickEnabled="True" SelectionMode="Single" SelectionChanged="albumsListView_SelectionChanged">
                         <ListView.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="local:Album">
                                 <Grid>
-                                    <TextBlock Text="{Binding Title}" />
+                                    <TextBlock Text="{x:Bind Title}" />
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -55,9 +55,9 @@
                 </Grid.RowDefinitions>
                 <AutoSuggestBox x:Name="songsSuggestBox" PlaceholderText="Tape song title" QueryIcon="Find" TextChanged="songsSuggestBox_TextChanged" Grid.Row="0"/>
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" Grid.Row="1">
-                    <ListView x:Name="songsListView" IsItemClickEnabled="True" SelectionMode="Single" ItemClick="songsListView_ItemClick">
+                    <ListView x:Name="songsListView" ItemsSource="{x:Bind Songs}" IsItemClickEnabled="True" SelectionMode="Single" ItemClick="songsListView_ItemClick">
                         <ListView.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="local:Audio">
                                 <Grid Margin="0 0 0 10" Width="Auto">
                                     <Grid.RowDefinitions>
                                         <RowDefinition />
@@ -68,10 +68,10 @@
                                         <ColumnDefinition/>
                                         <ColumnDefinition/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding Artist}" FontWeight="Bold" Grid.Column="0"/>
+                                    <TextBlock Text="{x:Bind Artist}" FontWeight="Bold" Grid.Column="0"/>
                                     <TextBlock Text=" – " Grid.Column="1"/>
-                                    <TextBlock Text="{Binding Title}" Grid.Column="2"/>
-                                    <TextBlock Text="{Binding Time}"  Grid.Column="3" HorizontalAlignment="Right"/>
+                                    <TextBlock Text="{x:Bind Title}" Grid.Column="2"/>
+                                    <TextBlock Text="{x:Bind Time}"  Grid.Column="3" HorizontalAlignment="Right"/>
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>

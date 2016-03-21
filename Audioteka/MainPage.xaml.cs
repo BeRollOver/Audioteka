@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -29,6 +30,8 @@ namespace Audioteka
     public sealed partial class MainPage : Page
     {
         string accessToken;
+        public ObservableCollection<Group> Groups;
+        public ObservableCollection<Post> Posts;
         public static Group currGroup;
         public static Post currPost;
 
@@ -36,20 +39,33 @@ namespace Audioteka
         {
             this.InitializeComponent();
             groupsSplitView.OpenPaneLength = Window.Current.Bounds.Width / 2;
-            OAuthVk();
+            if(accessToken==null) OAuthVk();
         }
-        
-        async void OAuthVk()
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (e.Parameter != null)
+            {
+                accessToken = e.Parameter.ToString();
+            }
+            try
+            {
+                getGroupList();
+            }
+            catch (Exception)
+            {
+                OAuthVk();
+            }
+        }
+
+            async void OAuthVk()
         {
             try
             {
-                const string vkUri = "https://oauth.vk.com/authorize?client_id=4919033&scope=audio,wall,groups&" +
-                                        "redirect_uri=http://oauth.vk.com/blank.html&display=touch&response_type=token";
-                Uri requestUri = new Uri(vkUri);
+                Uri requestUri = new Uri("https://oauth.vk.com/authorize?client_id=4919033&scope=audio,wall,groups&redirect_uri=http://oauth.vk.com/blank.html&display=touch&response_type=token");
                 Uri callbackUri = new Uri("http://oauth.vk.com/blank.html");
 
-                WebAuthenticationResult result = await WebAuthenticationBroker.AuthenticateAsync(
-                    WebAuthenticationOptions.None, requestUri, callbackUri);
+                WebAuthenticationResult result = await WebAuthenticationBroker.AuthenticateAsync(WebAuthenticationOptions.None, requestUri, callbackUri);
 
                 switch (result.ResponseStatus)
                 {
@@ -67,6 +83,8 @@ namespace Audioteka
                         accessToken = responseContent[1];
                         getGroupList();
                         break;
+                    default:
+                        break;
                 }
             }
             catch (Exception ex)
@@ -79,27 +97,28 @@ namespace Audioteka
 
         void getGroupList()
         {
-            string request = "https://api.vk.com/method/groups.get?user_id=130602270&filter=admin,moder,editor&extended=1&v=5.50&access_token=" + accessToken;
-            var groups = VkResponse.getResp<Data<Group>>(request);
-            groupListView.ItemsSource = groups.Response.Items;
+            string request = $"https://api.vk.com/method/groups.get?user_id=130602270&filter=admin,moder,editor&extended=1&v=5.50&access_token={accessToken}";
+            groupListView.ItemsSource = Groups = VkResponse.getResp<Data<Group>>(request).Response.Items;
+        }
+
+        void getPostList()
+        {
+            string request = $"https://api.vk.com/method/wall.get?owner_id=-{currGroup.Id}&filter=postponed&v=5.50&access_token={accessToken}";
+            var response = VkResponse.getResp<Data<Post>>(request);
+            foreach (var item in response.Response.Items) item.Time = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(item.Date).ToLocalTime(); // переводим время публикации из unixtime в DateTime, наверно это может делать и newton, но не знаю как
+            postsListView.ItemsSource = Posts = response.Response.Items;
         }
 
         private void groupsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // сохраняем объект выбранной группы
             var list = sender as ListView;
             if (list.SelectedItem is Group)
-                currGroup = list.SelectedItem as Group;  // сохраняем объект выбранной группы
+                currGroup = list.SelectedItem as Group;
             else
                 return;
 
-            // получаем список отложенных записей группы
-            string request = "https://api.vk.com/method/wall.get?owner_id=-" +
-                 currGroup.Id +
-                "&filter=postponed&v=5.50&access_token=" + accessToken;
-            var wall = VkResponse.getResp<Data<Post>>(request);
-            foreach (var item in wall.Response.Items) item.Time = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(item.Date); // переводим время публикации из unixtime в DateTime, наверно это может делать и newton, но не знаю как
-            
-            postsListView.ItemsSource = wall.Response.Items; // заполняем список песен справа
+            getPostList();
             groupsSplitView.IsPaneOpen = true; // открываем панель справа
         }
 

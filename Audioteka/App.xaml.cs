@@ -8,6 +8,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Security.Authentication.Web;
+using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -81,6 +82,32 @@ namespace Audioteka
             }
             // Обеспечение активности текущего окна
             Window.Current.Activate();
+
+            SystemNavigationManager.GetForCurrentView().BackRequested += App_BackRequested;
+            rootFrame.Navigated += (s, args) =>
+            {
+                if (rootFrame.CanGoBack) // если можно перейти назад, показываем кнопку
+                {
+                    SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
+                                            AppViewBackButtonVisibility.Visible;
+                }
+                else
+                {
+                    SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
+                        AppViewBackButtonVisibility.Collapsed;
+                }
+
+            };
+        }
+
+        private void App_BackRequested(object sender, BackRequestedEventArgs e)
+        {
+            Frame frame = Window.Current.Content as Frame;
+            if (frame.CanGoBack)
+            {
+                frame.GoBack();
+                e.Handled = true;
+            }
         }
 
         /// <summary>

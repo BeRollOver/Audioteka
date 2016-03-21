@@ -9,28 +9,30 @@
 
     <SplitView Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="groupsSplitView" DisplayMode="Inline">
         <SplitView.Content>
-        <ScrollViewer>
-            <ListView x:Name="groupListView" IsItemClickEnabled="True" SelectionMode="Single" SelectionChanged="groupsListView_SelectionChanged">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="50" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <Image Source="{Binding Photo}" MaxHeight="50" Stretch="None"  Grid.Column="0" />
-                            <TextBlock Text="{Binding Name}" Grid.Column="1" />
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </ScrollViewer>
+            <ScrollViewer>
+                <ListView x:Name="groupListView" ItemsSource="{x:Bind Groups}" IsItemClickEnabled="True" SelectionMode="Single" SelectionChanged="groupsListView_SelectionChanged">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:Group">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+
+                                <Image Source="{x:Bind Photo}" MaxHeight="50" Stretch="None"  Grid.Column="0" />
+                                <TextBlock Text="{x:Bind Name}" Grid.Column="1" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ScrollViewer>
         </SplitView.Content>
+        
         <SplitView.Pane>
             <ScrollViewer HorizontalScrollBarVisibility="Auto">
-                <ListView x:Name="postsListView" IsItemClickEnabled="True" SelectionMode="Single"  ItemClick="postsListView_ItemClick">
+                <ListView x:Name="postsListView" ItemsSource="{x:Bind Posts}" IsItemClickEnabled="True" SelectionMode="Single"  ItemClick="postsListView_ItemClick">
                     <ListView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="local:Post">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
@@ -40,9 +42,9 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding Id}" FontWeight="Bold" Grid.Row="0"/>
-                                <TextBlock Text="{Binding Time}" FontWeight="Bold" Grid.Row="1"/>
-                                <TextBlock MaxLines="4" Text="{Binding Text}"  Grid.Row="2" TextTrimming="WordEllipsis" Margin="0 0 0 10" />
+                                <TextBlock Text="{x:Bind Id}" FontWeight="Bold" Grid.Row="0"/>
+                                <TextBlock Text="{x:Bind Time}" FontWeight="Bold" Grid.Row="1"/>
+                                <TextBlock MaxLines="4" Text="{x:Bind Text}"  Grid.Row="2" TextTrimming="WordEllipsis" Margin="0 0 0 10" />
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>

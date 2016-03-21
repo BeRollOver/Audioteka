@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -35,7 +36,7 @@ namespace Audioteka
             }
         }
 
-        public static string getAttachString(List<Attachment> attch)
+        public static string getAttachString(ObservableCollection<Attachment> attch)
         {
             string attachments = "";
             foreach (var item in attch)
