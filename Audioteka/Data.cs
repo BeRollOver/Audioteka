@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Audioteka
 {
-    class Data<T>
+    public class Data<T>
     {
         public class Responce
         {
@@ -154,9 +154,15 @@ namespace Audioteka
         }
     }
 
-    class Result
+    public class Result
     {
         [JsonProperty("response")]
         public int Response { get; set; }
+    }
+
+    public class ResponcePostID
+    {
+        [JsonProperty("post_id")]
+        public int PostId { get; set; }
     }
 }

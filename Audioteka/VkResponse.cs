@@ -8,10 +8,11 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Popups;
 
 namespace Audioteka
 {
-    class VkResponse
+    public class VkResponse
     {
         public static T getResp<T>(string request)
         {
@@ -31,7 +32,6 @@ namespace Audioteka
             }
             catch (Exception)
             {
-
                 throw;
             }
         }

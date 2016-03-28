@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
+using VkData;
+using static VkData.Request;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Popups;
@@ -26,6 +28,7 @@ namespace Audioteka
     public sealed partial class AttachAudioPage : Page
     {
         string accessToken;
+        public ObservableCollection<Group> Groups;
         public ObservableCollection<Album> Albums;
         public ObservableCollection<Audio> Songs;
         public Album currAlbum;
@@ -42,12 +45,16 @@ namespace Audioteka
             {
                 accessToken = e.Parameter.ToString();
             }
+            
+            string request = $"https://api.vk.com/method/groups.get?user_id={MainPage.userId}&extended=1&v=5.50&access_token={accessToken}";
+            groupListView.ItemsSource = Groups = GetResponse<Data<Group>>(request).GetAwaiter().GetResult().GetResponse as ObservableCollection<Group>;
+            
 
             foreach (var item in MainPage.currPost.Attachments.Where(x => x.Type == "audio")) addSongToPanel(item.Audio); // список аудиозаписей поста на панель
             MainPage.currPost.Attachments = new ObservableCollection<Attachment>(MainPage.currPost.Attachments.Where(x => x.Type != "audio")); // очищаем предыдущий список аудиозаписей поста
             count = 10 - MainPage.currPost.Attachments.Count; // количество аудиозаписей, которых можно приложить к посту
 
-            getAlbumList();
+            getAlbumList(MainPage.currGroup.Id);
         }
 
         void addSongToPanel(Audio audio)
@@ -63,24 +70,24 @@ namespace Audioteka
             }
         }
 
-        void getAlbumList()
+        void getAlbumList(long id)
         {
             int offset = 0;
             string request = "https://api.vk.com/method/audio.getAlbums" +
-                $"?owner_id=-{MainPage.currGroup.Id}" +
+                $"?owner_id=-{id}" +
                 $"&offset={offset}" +
                 $"&count=100&v=5.50&access_token={accessToken}";
-            var response = VkResponse.getResp<Data<Album>>(request);
-            albumsListView.ItemsSource = Albums = VkResponse.getResp<Data<Album>>(request).Response.Items;
+            var response = GetResponse<Data<Album>>(request).GetAwaiter().GetResult();
+            albumsListView.ItemsSource = Albums = response.GetResponse as ObservableCollection<Album>;
             offset = Albums.Count;
 
-            while (response.Response.Count != Albums.Count)
+            while (response.Count != Albums.Count)
             {
                 request = "https://api.vk.com/method/audio.getAlbums" +
                     $"?owner_id=-{MainPage.currGroup.Id}" + 
                     $"&offset={offset}" +
                     $"&count=100&v=5.50&access_token={accessToken}";
-                foreach (var item in VkResponse.getResp<Data<Album>>(request).Response.Items) Albums.Add(item);
+                foreach (var item in GetResponse<Data<Album>>(request).GetAwaiter().GetResult().GetResponse) Albums.Add(item);
                 offset = Albums.Count;
             }
         }
@@ -91,9 +98,9 @@ namespace Audioteka
                 $"?owner_id=-{MainPage.currGroup.Id}" +
                 $"&album_id={currAlbum.Id}" +
                 $"&v=5.50&access_token={accessToken}";
-            var response = VkResponse.getResp<Data<Audio>>(request);
-            foreach (var item in response.Response.Items) item.Time = new TimeSpan(0, 0, item.Duration);
-            songsListView.ItemsSource = Songs = response.Response.Items;
+            var response = GetResponse<Data<Audio>>(request).GetAwaiter().GetResult();
+            foreach (var item in response.GetResponse) item.Time = new TimeSpan(0, 0, item.Duration);
+            songsListView.ItemsSource = Songs = response.GetResponse as ObservableCollection<Audio>;
         }
 
         private void albumsSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -151,12 +158,12 @@ namespace Audioteka
                 $"?owner_id=-{MainPage.currGroup.Id}" +
                 $"&post_id={MainPage.currPost.Id}" +
                 $"&message={System.Net.WebUtility.UrlEncode(MainPage.currPost.Text)}" +
-                $"&attachments={VkResponse.getAttachString(MainPage.currPost.Attachments)}" +
+                $"&attachments={GetAttachesString(MainPage.currPost.Attachments)}" +
                 $"&publish_date={MainPage.currPost.Date}" +
                 $"&v=5.50&access_token={accessToken}";
-            var result = VkResponse.getResp<Result>(request);
+            var result = GetResponse<Result>(request).GetAwaiter().GetResult();
 
-            if (result.Response == 1)
+            if (result.Res == 1)
             {
                 MessageDialog dialog = new MessageDialog("Success attached");
                 await dialog.ShowAsync();
@@ -167,7 +174,14 @@ namespace Audioteka
                 await dialog.ShowAsync();
             }
 
-            Frame.Navigate(typeof(MainPage), accessToken);
+            Frame.GoBack();
+        }
+
+        private void groupListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var list = sender as ListView;
+            var group = list.SelectedItem as Group;
+            getAlbumList(group.Id);
         }
     }
 }

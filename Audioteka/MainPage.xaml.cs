@@ -8,6 +8,8 @@ using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using VkData;
+using static VkData.Request;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Security.Authentication.Web;
@@ -30,6 +32,7 @@ namespace Audioteka
     public sealed partial class MainPage : Page
     {
         string accessToken;
+        public static long userId;
         public ObservableCollection<Group> Groups;
         public ObservableCollection<Post> Posts;
         public static Group currGroup;
@@ -80,6 +83,7 @@ namespace Audioteka
                         char[] separators = { '=', '&' };
                         string[] responseContent = responseString.Split(separators);
                         accessToken = responseContent[1];
+                        userId = Int32.Parse(responseContent[5]);
                         getGroupList();
                         break;
                     default:
@@ -88,24 +92,24 @@ namespace Audioteka
             }
             catch (Exception ex)
             {
-                MessageDialog dialogError = new MessageDialog("Ошибка входа");
-                await dialogError.ShowAsync();
+                await new MessageDialog("Ошибка входа").ShowAsync();
                 throw;
             }
         }
 
         void getGroupList()
         {
-            string request = $"https://api.vk.com/method/groups.get?user_id=130602270&filter=admin,moder,editor&extended=1&v=5.50&access_token={accessToken}";
-            groupListView.ItemsSource = Groups = VkResponse.getResp<Data<Group>>(request).Response.Items;
+            if (accessToken == null) throw new Exception();
+            string request = $"https://api.vk.com/method/groups.get?user_id={userId}&filter=admin,moder,editor&extended=1&v=5.50&access_token={accessToken}";
+            groupListView.ItemsSource = Groups = GetResponse<Data<Group>>(request).GetAwaiter().GetResult().GetResponse as ObservableCollection<Group>;
         }
 
         void getPostList()
         {
             string request = $"https://api.vk.com/method/wall.get?owner_id=-{currGroup.Id}&filter=postponed&v=5.50&access_token={accessToken}";
-            var response = VkResponse.getResp<Data<Post>>(request);
-            foreach (var item in response.Response.Items) item.Time = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(item.Date).ToLocalTime(); // переводим время публикации из unixtime в DateTime, наверно это может делать и newton, но не знаю как
-            postsListView.ItemsSource = Posts = response.Response.Items;
+            var response = GetResponse<Data<Post>>(request).GetAwaiter().GetResult();
+            foreach (var item in response.GetResponse) item.Time = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(item.Date).ToLocalTime(); // переводим время публикации из unixtime в DateTime, наверно это может делать и newton, но не знаю как
+            postsListView.ItemsSource = Posts = response.GetResponse as ObservableCollection<Post>;
         }
 
         private void groupsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
