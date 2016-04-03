@@ -8,49 +8,47 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <SplitView Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="groupsSplitView" DisplayMode="Inline">
+    <Page.Resources>
+        <DataTemplate x:Name="GroupsListTemplate" x:DataType="data:Group">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <Image Source="{x:Bind Photo}" MaxHeight="50" Stretch="None"  Grid.Column="0" />
+                <TextBlock Text="{x:Bind Name}" Grid.Column="1" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Name="PostsListTemplate" x:DataType="data:Post">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind Id}" FontWeight="Bold" Grid.Row="0"/>
+                <TextBlock Text="{x:Bind Time}" FontWeight="Bold" Grid.Row="1"/>
+                <TextBlock MaxLines="4" Text="{x:Bind Text}"  Grid.Row="2" TextTrimming="WordEllipsis" Margin="0 0 0 10" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+    
+    <SplitView x:Name="groupsSplitView" DisplayMode="Inline">
         <SplitView.Content>
             <ScrollViewer>
-                <ListView x:Name="groupListView" ItemsSource="{x:Bind Groups}" IsItemClickEnabled="True" SelectionMode="Single" SelectionChanged="groupsListView_SelectionChanged">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="data:Group">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="50" />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-
-                                <Image Source="{x:Bind Photo}" MaxHeight="50" Stretch="None"  Grid.Column="0" />
-                                <TextBlock Text="{x:Bind Name}" Grid.Column="1" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                <ListView x:Name="groupListView" ItemsSource="{x:Bind Groups}" IsItemClickEnabled="True" SelectionMode="Single" SelectionChanged="groupsListView_SelectionChanged" ItemTemplate="{StaticResource GroupsListTemplate}" />
             </ScrollViewer>
         </SplitView.Content>
         
         <SplitView.Pane>
             <ScrollViewer HorizontalScrollBarVisibility="Auto">
-                <ListView x:Name="postsListView" ItemsSource="{x:Bind Posts}" IsItemClickEnabled="True" SelectionMode="Single"  ItemClick="postsListView_ItemClick">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="data:Post">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                    <RowDefinition />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{x:Bind Id}" FontWeight="Bold" Grid.Row="0"/>
-                                <TextBlock Text="{x:Bind Time}" FontWeight="Bold" Grid.Row="1"/>
-                                <TextBlock MaxLines="4" Text="{x:Bind Text}"  Grid.Row="2" TextTrimming="WordEllipsis" Margin="0 0 0 10" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-                </ScrollViewer>
+                <ListView x:Name="postsListView" ItemsSource="{x:Bind Posts}" IsItemClickEnabled="True" SelectionMode="Single"  ItemClick="postsListView_ItemClick" ItemTemplate="{StaticResource PostsListTemplate}" />
+            </ScrollViewer>
         </SplitView.Pane>
     </SplitView>
 </Page>

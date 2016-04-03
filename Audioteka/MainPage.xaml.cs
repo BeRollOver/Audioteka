@@ -9,7 +9,6 @@ using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using VkData;
-using static VkData.Request;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Security.Authentication.Web;
@@ -31,8 +30,6 @@ namespace Audioteka
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        string accessToken;
-        public static long userId;
         public ObservableCollection<Group> Groups;
         public ObservableCollection<Post> Posts;
         public static Group currGroup;
@@ -46,70 +43,34 @@ namespace Audioteka
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter != null)
-            {
-                accessToken = e.Parameter.ToString();
-            }
             try
             {
-                getGroupList();
+                // вбросит исключение, если токен == null
+                getGroupList(App.auth);
             }
             catch (Exception)
             {
-                OAuthVk();
+                // получит токен и установит в качестве продолжения функцию getGroupList
+                VKAuth.Auth(getGroupList);
             }
         }
-
-        async void OAuthVk()
+        
+        void getGroupList(VKAuth auth)
         {
-            try
-            {
-                Uri requestUri = new Uri("https://oauth.vk.com/authorize?client_id=4919033&scope=audio,wall,groups&redirect_uri=http://oauth.vk.com/blank.html&display=touch&response_type=token");
-                Uri callbackUri = new Uri("http://oauth.vk.com/blank.html");
+            // сохраняем полученные токен и id
+            if (auth.AccessToken == null) throw new Exception();
+            App.auth = auth;
 
-                WebAuthenticationResult result = await WebAuthenticationBroker.AuthenticateAsync(WebAuthenticationOptions.None, requestUri, callbackUri);
-
-                switch (result.ResponseStatus)
-                {
-                    case WebAuthenticationStatus.UserCancel:
-                        break;
-                    case WebAuthenticationStatus.ErrorHttp:
-                        MessageDialog dialogError = new MessageDialog("Не удалось открыть страницу сервиса\n" +
-                    "Попробуйте войти в приложение позже!", "Ошибка");
-                        await dialogError.ShowAsync();
-                        break;
-                    case WebAuthenticationStatus.Success:
-                        string responseString = result.ResponseData;
-                        char[] separators = { '=', '&' };
-                        string[] responseContent = responseString.Split(separators);
-                        accessToken = responseContent[1];
-                        userId = Int32.Parse(responseContent[5]);
-                        getGroupList();
-                        break;
-                    default:
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                await new MessageDialog("Ошибка входа").ShowAsync();
-                throw;
-            }
-        }
-
-        void getGroupList()
-        {
-            if (accessToken == null) throw new Exception();
-            string request = $"https://api.vk.com/method/groups.get?user_id={userId}&filter=admin,moder,editor&extended=1&v=5.50&access_token={accessToken}";
-            groupListView.ItemsSource = Groups = GetResponse<Data<Group>>(request).GetAwaiter().GetResult().GetResponse as ObservableCollection<Group>;
+            // загружаем список групп, в которых пользователь админ
+            string request = $"https://api.vk.com/method/groups.get?user_id={auth.Id}&filter=admin,moder,editor&extended=1&v=5.50&access_token={App.auth.AccessToken}";
+            groupListView.ItemsSource = Groups = VkRequest.GetResponse<VkDataResponse<Group>>(request).GetAwaiter().GetResult().GetItems as ObservableCollection<Group>;
         }
 
         void getPostList()
         {
-            string request = $"https://api.vk.com/method/wall.get?owner_id=-{currGroup.Id}&filter=postponed&v=5.50&access_token={accessToken}";
-            var response = GetResponse<Data<Post>>(request).GetAwaiter().GetResult();
-            foreach (var item in response.GetResponse) item.Time = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(item.Date).ToLocalTime(); // переводим время публикации из unixtime в DateTime, наверно это может делать и newton, но не знаю как
-            postsListView.ItemsSource = Posts = response.GetResponse as ObservableCollection<Post>;
+            string request = $"https://api.vk.com/method/wall.get?owner_id=-{currGroup.Id}&filter=postponed&v=5.50&access_token={App.auth.AccessToken}";
+            var response = VkRequest.GetResponse<VkDataResponse<Post>>(request).GetAwaiter().GetResult();
+            postsListView.ItemsSource = Posts = response.GetItems as ObservableCollection<Post>;
         }
 
         private void groupsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -121,14 +82,14 @@ namespace Audioteka
             else
                 return;
 
-            getPostList();
-            groupsSplitView.IsPaneOpen = true; // открываем панель справа
+            getPostList(); // список постов в панель слева
+            groupsSplitView.IsPaneOpen = true; // открываем панель слева
         }
 
         private void postsListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             currPost = e.ClickedItem as Post; // сохраняем объект выбранного поста
-            Frame.Navigate(typeof(AttachAudioPage), accessToken); // вызываем окно выбора аудиозаписей
+            Frame.Navigate(typeof(AttachAudioPage)); // вызываем окно выбора аудиозаписей
         }
     }
 }
